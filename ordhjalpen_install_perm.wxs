@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+    xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+    <Product Id="bebea63e-0d47-4944-a9dc-6b7b40462399" 
+            UpgradeCode="d4e4fba1-52a3-4c7c-b0c5-7756f9dc0c0b" 
+            Name="Ordhjälpen" 
+            Version="1.0" 
+            Manufacturer="Fredrik Harnevik" 
+            Language="1053"
+            Codepage="1252"
+            >
+        <Package InstallerVersion="300" Compressed="yes" Comments="Installationspaket för Ordhjälpen"/>
+        <Media Id="1" Cabinet="application.cab" EmbedCab="yes"/>
+
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder">
+                <Directory Id="APPLICATIONROOTDIRECTORY" Name="Ordhjälpen">
+                    <Directory Id="DataFolder" Name="data">
+                    </Directory>
+                </Directory>
+            </Directory>
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="MainAppFolder" Name="Ordhjälpen"/>
+            </Directory>
+            <Directory Id="StartupFolder"></Directory>
+        </Directory>
+
+
+        <DirectoryRef Id="APPLICATIONROOTDIRECTORY">
+            <Component Id="ordhjalpen.exe" Guid="1e40614d-75b7-4cca-b711-3de5d46a5b92">
+                <File Id="ordhjalpen.exe" Source="ordhjalpen.exe" KeyPath="yes" />
+            </Component>
+            <Component Id="wordUtils.exe" Guid="6e20cc39-50d6-4433-9890-ab85d1ec347a">
+                <File Id="wordUtils.exe" Source="wordUtils.exe">
+                </File>
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="DataFolder">
+            <Component Id="SetPermissionsOnData" Guid="3d211507-6041-4f5c-b53d-fddf0b889127">
+                <CreateFolder>
+                    <util:PermissionEx User="Everyone" GenericAll="yes" />
+                </CreateFolder>
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="DataFolder"> 
+            <Component Id="ahk_config.ini" Guid="e4c3317d-34bc-49f8-bb50-ee48eded26ed">
+                <File Id="ahk_config.ini" Source="data\ahk_config.ini"/>
+            </Component>
+            <Component Id="wordData.json" Guid="26e4c405-bb8c-439e-beb7-2e64648f956a">
+                <File Id="wordData.json" Source="data\wordData.json"/>
+            </Component>
+            <Component Id="Ordhjalpen_V2.pdf" Guid="addaf76c-e510-44e0-98f8-e45dffc12f38">
+                <File Id="Ordhjalpen_V2.pdf" Source="data\Ordhjälpen_V2.pdf"/>
+            </Component>
+        </DirectoryRef>
+        
+        <DirectoryRef Id="MainAppFolder">
+            <Component Id="ApplicationShortcut" Guid="b94b35e1-ce50-4913-9871-aa64b03ccf40" >
+                <Shortcut Id="ApplicationStartMenuShortcut"
+                            Name="Ordhjälpen"
+                            Description="Ett verktyg för att förenkla och effektivisera skrivande"
+                            Target="[APPLICATIONROOTDIRECTORY]ordhjalpen.exe"
+                            WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
+                <RemoveFolder Id="DeleteFolder" Directory="MainAppFolder" On="uninstall" />
+                <RegistryValue Root="HKCU" 
+                                Key="Software\Harnevik\Ordhjalpen" 
+                                Name="installed" 
+                                Type="integer"
+                                Value="1"
+                                KeyPath="yes" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="StartupFolder">
+            <Component Id="StartUpShortcut" Guid="3a51a1e2-3c9d-4882-bfa4-b928d4819bf1">
+                <Shortcut Id="StartUpShort" 
+                            Name="Ordhjälpen Autostart" 
+                            Target="[APPLICATIONROOTDIRECTORY]wordUtils.exe"
+                            WorkingDirectory="APPLICATIONROOTDIRECTORY" />
+                <RemoveFile Id="RemoveAutostartShortcut" On="uninstall" Name="Ordhjälpen Autostart.lnk" />
+                <RegistryValue Root="HKCU" 
+                Key="Software\Harnevik\Ordhjalpen" 
+                Name="shortcut" 
+                Type="integer"
+                Value="1"
+                KeyPath="yes" />
+            </Component>
+        </DirectoryRef>
+        <CustomAction Id="AFTER_INSTALL"
+                        Execute="immediate"
+                        Return="asyncNoWait"
+                        FileKey="wordUtils.exe"
+                        Impersonate="yes"
+                        ExeCommand="" />
+        
+        <InstallExecuteSequence>
+            <Custom Action="AFTER_INSTALL" After="InstallFinalize">NOT INSTALLED</Custom>
+        </InstallExecuteSequence>
+
+        <Feature Id="MainApp" Title="Ordhjälpen" Level="1">
+            <ComponentRef Id="ordhjalpen.exe" />
+            <ComponentRef Id="wordUtils.exe" />
+            <ComponentRef Id="ahk_config.ini" />
+            <ComponentRef Id="wordData.json" />
+            <ComponentRef Id="Ordhjalpen_V2.pdf" />
+            <ComponentRef Id="ApplicationShortcut" />
+            <ComponentRef Id="StartUpShortcut" />
+            <ComponentRef Id="SetPermissionsOnData"/>
+        </Feature>
+
+    </Product>
+</Wix>
